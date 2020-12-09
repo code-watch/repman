@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9887db1dbe252969edb7a7d05beef679",
+    "content-hash": "c38c8a9dfec3234732375293e893cddc",
     "packages": [
         {
             "name": "bitbucket/client",
@@ -7762,16 +7762,16 @@
         },
         {
             "name": "symfony/doctrine-messenger",
-            "version": "v5.1.7",
+            "version": "v5.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/doctrine-messenger.git",
-                "reference": "d4299ea85c28ccf5ff773028523dc628071718b2"
+                "reference": "647d35585648808efba7d9d449e8f735513a9eea"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/doctrine-messenger/zipball/d4299ea85c28ccf5ff773028523dc628071718b2",
-                "reference": "d4299ea85c28ccf5ff773028523dc628071718b2",
+                "url": "https://api.github.com/repos/symfony/doctrine-messenger/zipball/647d35585648808efba7d9d449e8f735513a9eea",
+                "reference": "647d35585648808efba7d9d449e8f735513a9eea",
                 "shasum": "",
                 "mirrors": [
                     {
@@ -7786,20 +7786,16 @@
                 "symfony/service-contracts": "^1.1|^2"
             },
             "conflict": {
+                "doctrine/dbal": "<2.10",
                 "doctrine/persistence": "<1.3"
             },
             "require-dev": {
-                "doctrine/dbal": "^2.6|^3.0",
+                "doctrine/dbal": "^2.10|^3.0",
                 "doctrine/persistence": "^1.3|^2",
                 "symfony/property-access": "^4.4|^5.0",
                 "symfony/serializer": "^4.4|^5.0"
             },
             "type": "symfony-bridge",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "5.1-dev"
-                }
-            },
             "autoload": {
                 "psr-4": {
                     "Symfony\\Component\\Messenger\\Bridge\\Doctrine\\": ""
@@ -7838,7 +7834,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-09-27T14:02:37+00:00"
+            "time": "2020-11-28T23:28:16+00:00"
         },
         {
             "name": "symfony/dotenv",
