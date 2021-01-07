@@ -429,16 +429,16 @@
         },
         {
             "name": "clue/mq-react",
-            "version": "v1.2.0",
+            "version": "v1.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/clue/reactphp-mq.git",
-                "reference": "d04c4fa7ba607f649a83d946c23fc7b7c57f1125"
+                "reference": "490556d66c804300604d1b4d5e42fc027e14f1eb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/clue/reactphp-mq/zipball/d04c4fa7ba607f649a83d946c23fc7b7c57f1125",
-                "reference": "d04c4fa7ba607f649a83d946c23fc7b7c57f1125",
+                "url": "https://api.github.com/repos/clue/reactphp-mq/zipball/490556d66c804300604d1b4d5e42fc027e14f1eb",
+                "reference": "490556d66c804300604d1b4d5e42fc027e14f1eb",
                 "shasum": "",
                 "mirrors": [
                     {
@@ -453,9 +453,9 @@
             },
             "require-dev": {
                 "clue/block-react": "^1.0",
-                "clue/buzz-react": "^2.4",
-                "phpunit/phpunit": "^7.0 || ^6.4 || ^5.7 || ^4.8.35",
-                "react/event-loop": "^1.0 || ^0.5 || ^0.4 || ^0.3"
+                "phpunit/phpunit": "^9.3 || ^5.7 || ^4.8.35",
+                "react/event-loop": "^1.0 || ^0.5",
+                "react/http": "^1.0"
             },
             "type": "library",
             "autoload": {
@@ -490,9 +490,19 @@
             ],
             "support": {
                 "issues": "https://github.com/clue/reactphp-mq/issues",
-                "source": "https://github.com/clue/reactphp-mq/tree/v1.2.0"
+                "source": "https://github.com/clue/reactphp-mq/tree/v1.3.0"
             },
-            "time": "2019-12-05T08:45:06+00:00"
+            "funding": [
+                {
+                    "url": "https://clue.engineering/support",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/clue",
+                    "type": "github"
+                }
+            ],
+            "time": "2020-10-16T10:42:49+00:00"
         },
         {
             "name": "clue/stream-filter",
