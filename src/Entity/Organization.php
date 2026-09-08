@@ -232,15 +232,41 @@ class Organization
         }
     }
 
+    /**
+     * The token this organization's packages are synchronized with. Any of its owners
+     * may have authorized one, and exactly one of them is used.
+     *
+     * Which one has to be stable. $members carries no @ORM\OrderBy, so owners arrive in
+     * whatever order Postgres returns for an unordered select - an order that changes
+     * after any update to organization_member. Returning the first owner holding a token
+     * therefore made an organization with several authorized owners synchronize against
+     * a different account from one run to the next: a dead token kept resurfacing however
+     * many times the affected owner re-authorized, and every run spent a rotation of
+     * whichever refresh token it happened to land on.
+     *
+     * The newest authorization wins. It is the most recent statement of which account to
+     * use, and with rotating refresh tokens it is also the one whose token has had the
+     * fewest opportunities to be lost.
+     */
     public function oauthToken(string $type): ?OAuthToken
     {
+        $tokens = [];
         foreach ($this->members->filter(fn (Member $member) => $member->isOwner()) as $owner) {
-            if ($owner->user()->oauthToken($type) !== null) {
-                return $owner->user()->oauthToken($type);
+            $token = $owner->user()->oauthToken($type);
+            if ($token !== null) {
+                $tokens[] = $token;
             }
         }
 
-        return null;
+        usort($tokens, function (OAuthToken $a, OAuthToken $b): int {
+            $byAge = $b->createdAt() <=> $a->createdAt();
+
+            // created_at is stored to the second, so two owners can authorize within the
+            // same one - the id keeps the choice from falling back on row order again
+            return $byAge !== 0 ? $byAge : strcmp($b->id()->toString(), $a->id()->toString());
+        });
+
+        return $tokens[0] ?? null;
     }
 
     /**

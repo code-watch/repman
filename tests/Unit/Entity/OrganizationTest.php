@@ -8,6 +8,7 @@ use Buddy\Repman\Entity\Organization;
 use Buddy\Repman\Entity\Organization\Member;
 use Buddy\Repman\Entity\Organization\Token;
 use Buddy\Repman\Entity\User;
+use Buddy\Repman\Entity\User\OAuthToken;
 use Buddy\Repman\Tests\MotherObject\PackageMother;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
@@ -102,5 +103,82 @@ final class OrganizationTest extends TestCase
         $this->expectExceptionMessage('Organisation must have at least one owner.');
 
         $this->org->changeRole($member, Member::ROLE_MEMBER);
+    }
+
+    public function testNoOAuthTokenWhenNoOwnerAuthorizedOne(): void
+    {
+        self::assertNull($this->org->oauthToken(OAuthToken::TYPE_BITBUCKET));
+    }
+
+    public function testOAuthTokenOfTheTypeAsked(): void
+    {
+        $bitbucket = $this->authorize($this->owner, OAuthToken::TYPE_BITBUCKET, '-1 day');
+        $this->authorize($this->owner, OAuthToken::TYPE_GITHUB, '-1 hour');
+
+        self::assertSame($bitbucket, $this->org->oauthToken(OAuthToken::TYPE_BITBUCKET));
+    }
+
+    public function testNewestOwnerAuthorizationWins(): void
+    {
+        $this->authorize($this->owner, OAuthToken::TYPE_BITBUCKET, '-4 years');
+        $newest = $this->authorize($this->addOwner('newest@buddy.works'), OAuthToken::TYPE_BITBUCKET, '-1 minute');
+        $this->authorize($this->addOwner('older@buddy.works'), OAuthToken::TYPE_BITBUCKET, '-1 month');
+
+        self::assertSame($newest, $this->org->oauthToken(OAuthToken::TYPE_BITBUCKET));
+    }
+
+    public function testTokensAuthorizedInTheSameSecondResolveToTheSameOne(): void
+    {
+        $sameSecond = new \DateTimeImmutable('2026-09-08 13:41:16');
+        $first = $this->authorizeAt($this->addOwner('first@buddy.works'), $sameSecond);
+        $second = $this->authorizeAt($this->addOwner('second@buddy.works'), $sameSecond);
+
+        $expected = strcmp($first->id()->toString(), $second->id()->toString()) > 0 ? $first : $second;
+
+        self::assertSame($expected, $this->org->oauthToken(OAuthToken::TYPE_BITBUCKET));
+    }
+
+    /**
+     * Members are only ever ordered by the database, so a non-owner holding the newest
+     * token must not take the choice away from an owner holding an older one.
+     */
+    public function testTokensOfPlainMembersAreIgnored(): void
+    {
+        $ownersToken = $this->authorize($this->owner, OAuthToken::TYPE_BITBUCKET, '-1 month');
+
+        $this->org->inviteUser('member@buddy.works', Member::ROLE_MEMBER, 'member-token');
+        $this->org->acceptInvitation('member-token', $member = new User(Uuid::uuid4(), 'member@buddy.works', Uuid::uuid4()->toString(), []));
+        $this->authorize($member, OAuthToken::TYPE_BITBUCKET, '-1 minute');
+
+        self::assertSame($ownersToken, $this->org->oauthToken(OAuthToken::TYPE_BITBUCKET));
+    }
+
+    private function addOwner(string $email): User
+    {
+        $this->org->inviteUser($email, Member::ROLE_OWNER, $token = 'invitation-'.$email);
+        $this->org->acceptInvitation($token, $owner = new User(Uuid::uuid4(), $email, Uuid::uuid4()->toString(), []));
+
+        return $owner;
+    }
+
+    private function authorize(User $user, string $type, string $modify): OAuthToken
+    {
+        return $this->authorizeAt($user, (new \DateTimeImmutable())->modify($modify), $type);
+    }
+
+    /**
+     * The entity stamps createdAt itself, so a test cannot ask for an authorization that
+     * happened years ago - and relying on real wall-clock ordering would make the
+     * ordering assertions depend on how fine the clock is.
+     */
+    private function authorizeAt(User $user, \DateTimeImmutable $createdAt, string $type = OAuthToken::TYPE_BITBUCKET): OAuthToken
+    {
+        $token = new OAuthToken(Uuid::uuid4(), $user, $type, 'access-token', 'refresh-token');
+
+        $property = (new \ReflectionObject($token))->getProperty('createdAt');
+        $property->setAccessible(true);
+        $property->setValue($token, $createdAt);
+
+        return $token;
     }
 }

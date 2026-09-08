@@ -129,6 +129,16 @@ class OAuthToken
         return $this->id;
     }
 
+    /**
+     * When the user authorized the application. Stored to the second, so two tokens
+     * can legitimately carry the same value - see Organization::oauthToken(), which
+     * orders by this and needs a tie-breaker because of it.
+     */
+    public function createdAt(): \DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
     public function type(): string
     {
         return $this->type;
